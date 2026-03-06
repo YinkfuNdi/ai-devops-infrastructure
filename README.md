@@ -12,6 +12,7 @@
 
 ## 📋 **Project Overview**
 
+
 A **production-grade Kubernetes-native DevOps infrastructure** demonstrating expertise in modern cloud-native technologies, Infrastructure as Code, CI/CD automation, and full observability. Built to showcase hands-on experience with the exact stack required for high-caliber engineering roles.
 
 ### 🎯 **Key Features**
@@ -31,7 +32,10 @@ A **production-grade Kubernetes-native DevOps infrastructure** demonstrating exp
 ## 🏗️ **Architecture**
 
 
----
+---<img width="1906" height="919" alt="Screenshot 2026-03-05 145731" src="https://github.com/u<img width="1917" height="920" alt="Screenshot 2026-03-05 145810" src="https://github.com/user-attachments/assets/bb78c534-d4d0-41e1-ae32-4694d12c7978" />
+ser-attachments/assets/cbc4f5a9-50d6-4a9b-b202-537efa6e547b" />
+
+<img width="1919" height="906" alt="Screenshot 2026-03-05 145817" src="https://github.com/user-attachments/assets/100cc5ff-62dd-43dc-950e-b5852f0e29e9" />
 
 ## ✅ **Implemented Features**
 
