@@ -198,8 +198,7 @@ Troubleshooting	Incident Documentation, Root Cause Analysis
 📚 Documentation
 CI/CD Pipeline Documentation
 
-<img width="1913" height="908" alt="Screenshot 2026-03-06 083838" src="https://github.com/user-attachments/assets/702b65a2-2355-4404-9f16-08ed32795a89" />
-
+<img width="1913" height="908" alt="Screenshot 2026-03-06 083838" src="https://github.com/user-attachments/assets/9d80f79e-e839-4212-b364-be44b4e927ca" />
 
 Incident Reports
 
