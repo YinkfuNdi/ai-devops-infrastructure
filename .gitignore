@@ -1,0 +1,33 @@
+﻿# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfplan
+*.lock.hcl
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+*.log
+.DS_Store
+
+# Local files
+*.backup
+*.bak
+terraform.tfvars
+*.auto.tfvars
