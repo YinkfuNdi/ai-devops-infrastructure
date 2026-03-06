@@ -199,10 +199,7 @@ Troubleshooting	Incident Documentation, Root Cause Analysis
 CI/CD Pipeline Documentation
 
 <img width="1913" height="908" alt="Screenshot 2026-03-06 083838" src="https://github.com/user-attachments/assets/702b65a2-2355-4404-9f16-08ed32795a89" />
-<img width="1914" height="903" alt="Screenshot 2026-03-06 084450" src="https://github.com/user-attachments/assets/a7863095-f545-48e2-957e-0fa65d8d782a" />
-<img width="1919" height="915" alt="Screenshot 2026-03-06 085710" src="https://github.com/user-attachments/assets/276eef4e-56a6-472d-a88a-185e25ed8c3c" />
-<img width="1862" height="851" alt="Screenshot 2026-03-06 091038" src="https://github.com/user-attachments/assets/3f71c165-d38c-4bc2-94e2-e1c4db718473" />
-<img width="1909" height="915" alt="Screenshot 2026-03-06 092033" src="https://github.com/user-attachments/assets/86643393-db9a-4d79-ab1f-1a9822666545" />
+
 
 Incident Reports
 
