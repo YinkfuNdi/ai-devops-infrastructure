@@ -30,12 +30,17 @@ A **production-grade Kubernetes-native DevOps infrastructure** demonstrating exp
 ---
 
 ## 🏗️ **Architecture**
+<img width="1916" height="903" alt="Screenshot 2026-03-06 081620" src="https://github.com/user-attachments/assets/d57ccd85-7f18-405e-9539-b2e6e51bba76" />
 
 
 ---<img width="1906" height="919" alt="Screenshot 2026-03-05 145731" src="https://github.com/u<img width="1917" height="920" alt="Screenshot 2026-03-05 145810" src="https://github.com/user-attachments/assets/bb78c534-d4d0-41e1-ae32-4694d12c7978" />
 ser-attachments/assets/cbc4f5a9-50d6-4a9b-b202-537efa6e547b" />
 
 <img width="1919" height="906" alt="Screenshot 2026-03-05 145817" src="https://github.com/user-attachments/assets/100cc5ff-62dd-43dc-950e-b5852f0e29e9" />
+
+<img width="1909" height="915" alt="Screenshot 2026-03-06 092033" src="https://github.com/user-attachments/assets/58342ecf-9804-457b-8d9c-663b718cee63" />
+
+
 
 ## ✅ **Implemented Features**
 
@@ -198,7 +203,6 @@ Troubleshooting	Incident Documentation, Root Cause Analysis
 📚 Documentation
 CI/CD Pipeline Documentation
 
-<img width="1913" height="908" alt="Screenshot 2026-03-06 083838" src="https://github.com/user-attachments/assets/9d80f79e-e839-4212-b364-be44b4e927ca" />
 
 Incident Reports
 
