@@ -1,0 +1,244 @@
+# .gitlab-ci.yml
+stages:
+  - validate
+  - build
+  - test
+  - security
+  - deploy
+  - verify
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/ai-devops-app
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  KUBE_NAMESPACE: ai-devops
+
+# Cache dependencies to speed up pipelines
+cache:
+  paths:
+    - venv/
+    - .terraform/
+    - app/__pycache__/
+
+# ----------------------
+# VALIDATION STAGE
+# ----------------------
+validate-kubernetes:
+  stage: validate
+  image: alpine/k8s:1.28
+  script:
+    - apk add --no-cache yamllint
+    - echo "Validating Kubernetes manifests..."
+    - yamllint k8s/
+    - kubectl apply --dry-run=client -f k8s/ --validate=true
+  only:
+    - merge_requests
+    - main
+    - master
+
+validate-terraform:
+  stage: validate
+  image: hashicorp/terraform:1.6
+  script:
+    - cd terraform
+    - echo "Validating Terraform configurations..."
+    - terraform init -backend=false
+    - terraform validate
+    - terraform fmt -check
+  only:
+    - merge_requests
+    - main
+    - master
+
+# ----------------------
+# BUILD STAGE
+# ----------------------
+build:
+  stage: build
+  image: docker:24.0
+  services:
+    - docker:24.0-dind
+  before_script:
+    - echo "Logging into container registry..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - echo "Building Docker image..."
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG ./app
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+    - echo "Pushing images to registry..."
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    - docker push $IMAGE_NAME:latest
+  after_script:
+    - echo "Build complete for commit $CI_COMMIT_SHORT_SHA"
+  only:
+    - main
+    - master
+
+# ----------------------
+# TEST STAGE
+# ----------------------
+unit-test:
+  stage: test
+  image: python:3.11-slim
+  before_script:
+    - cd app
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - echo "Running unit tests..."
+    - pip install pytest pytest-cov pytest-html
+    - mkdir -p test-reports
+    - pytest --cov=. --cov-report=term --cov-report=xml:test-reports/coverage.xml --html=test-reports/report.html --self-contained-html
+    - echo "Tests completed successfully"
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: app/test-reports/coverage.xml
+    paths:
+      - app/test-reports/
+    expire_in: 1 week
+  only:
+    - main
+    - master
+    - merge_requests
+
+# ----------------------
+# SECURITY STAGE
+# ----------------------
+security-scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - echo "Scanning Docker image for vulnerabilities..."
+    - trivy image --severity HIGH,CRITICAL --no-progress --ignore-unfixed $IMAGE_NAME:$IMAGE_TAG
+    - echo "Scanning Kubernetes configs..."
+    - trivy config --severity HIGH,CRITICAL k8s/
+    - echo "Scanning Terraform configs..."
+    - trivy config --severity HIGH,CRITICAL terraform/
+  allow_failure: true
+  only:
+    - main
+    - master
+
+# ----------------------
+# DEPLOYMENT STAGE
+# ----------------------
+deploy-staging:
+  stage: deploy
+  image: bitnami/kubectl:1.28
+  before_script:
+    - echo "Configuring kubectl..."
+    - mkdir -p $HOME/.kube
+    - echo "$KUBE_CONFIG" | base64 -d > $HOME/.kube/config
+  script:
+    - echo "Deploying to staging environment..."
+    - kubectl config set-context --current --namespace=$KUBE_NAMESPACE
+    
+    # Update image in deployment
+    - kubectl set image deployment/ai-devops-app -n $KUBE_NAMESPACE ai-devops-container=$IMAGE_NAME:$IMAGE_TAG
+    
+    # Wait for rollout to complete
+    - kubectl rollout status deployment/ai-devops-app -n $KUBE_NAMESPACE --timeout=5m
+    
+    # Show deployment status
+    - kubectl get pods -n $KUBE_NAMESPACE -l app=ai-devops-app
+    
+    # Scale if needed (optional)
+    # - kubectl scale deployment/ai-devops-app -n $KUBE_NAMESPACE --replicas=3
+  environment:
+    name: staging
+    url: https://staging.ai-devops.local
+  only:
+    - main
+    - master
+
+deploy-production:
+  stage: deploy
+  image: bitnami/kubectl:1.28
+  before_script:
+    - echo "Configuring kubectl for production..."
+    - mkdir -p $HOME/.kube
+    - echo "$KUBE_CONFIG_PROD" | base64 -d > $HOME/.kube/config
+  script:
+    - echo "Deploying to production environment..."
+    - kubectl config set-context --current --namespace=$KUBE_NAMESPACE
+    
+    # Apply any config changes
+    - kubectl apply -f k8s/
+    
+    # Ensure correct image
+    - kubectl set image deployment/ai-devops-app -n $KUBE_NAMESPACE ai-devops-container=$IMAGE_NAME:$IMAGE_TAG
+    
+    # Wait for rollout
+    - kubectl rollout status deployment/ai-devops-app -n $KUBE_NAMESPACE --timeout=5m
+    
+    # Scale for production
+    - kubectl scale deployment/ai-devops-app -n $KUBE_NAMESPACE --replicas=3
+  environment:
+    name: production
+    url: https://app.ai-devops.local
+  only:
+    - tags
+  when: manual
+
+# ----------------------
+# VERIFICATION STAGE
+# ----------------------
+verify-deployment:
+  stage: verify
+  image: curlimages/curl:latest
+  needs:
+    - deploy-staging
+  script:
+    - echo "Verifying deployment..."
+    - echo "Testing health endpoint..."
+    - curl -f http://ai-devops-service.$KUBE_NAMESPACE.svc.cluster.local:80/health || exit 1
+    - echo "Health check passed ✓"
+    
+    - echo "Testing hello endpoint..."
+    - curl -f http://ai-devops-service.$KUBE_NAMESPACE.svc.cluster.local:80/hello || exit 1
+    - echo "Hello endpoint passed ✓"
+    
+    - echo "Testing metrics endpoint..."
+    - curl -f http://ai-devops-service.$KUBE_NAMESPACE.svc.cluster.local:80/metrics || exit 1
+    - echo "Metrics endpoint passed ✓"
+    
+    - echo "All verification checks passed! 🎉"
+  only:
+    - main
+    - master
+
+# ----------------------
+# CLEANUP JOBS
+# ----------------------
+cleanup-review:
+  stage: deploy
+  image: bitnami/kubectl:1.28
+  before_script:
+    - mkdir -p $HOME/.kube
+    - echo "$KUBE_CONFIG" | base64 -d > $HOME/.kube/config
+  script:
+    - echo "Cleaning up review environment..."
+    - kubectl delete deployment ai-devops-app-review-$CI_MERGE_REQUEST_IID -n $KUBE_NAMESPACE || true
+    - kubectl delete service ai-devops-app-review-$CI_MERGE_REQUEST_IID -n $KUBE_NAMESPACE || true
+  only:
+    - merge_requests
+  when: manual
+
+# ----------------------
+# SCHEDULED JOBS
+# ----------------------
+weekly-security-scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - echo "Running weekly full security scan..."
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed $IMAGE_NAME:latest
+    - trivy fs --severity HIGH,CRITICAL --ignore-unfixed .
+  only:
+    - schedules
+  except:
+    - merge_requests
