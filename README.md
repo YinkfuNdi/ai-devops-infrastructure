@@ -30,7 +30,8 @@ A **production-grade Kubernetes-native DevOps infrastructure** demonstrating exp
 ---
 
 ## 🏗️ **Architecture**
-<img width="1916" height="903" alt="Screenshot 2026-03-06 081620" src="https://github.com/user-attachments/assets/d57ccd85-7f18-405e-9539-b2e6e51bba76" />
+<img width="1913" height="908" alt="Screenshot 2026-03-06 083838" src="https://github.com/user-attachments/assets/5b0e341b-a81a-4e8d-8829-f2f152c54cf7" />
+
 
 <img width="1862" height="851" alt="Screenshot 2026-03-06 091038" src="https://github.com/user-attachments/assets/d6a6a05e-1475-40fe-ab6e-f32bf54aa545" />
 
