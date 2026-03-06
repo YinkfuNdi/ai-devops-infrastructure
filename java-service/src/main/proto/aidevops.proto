@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package aidevops;
+
+option java_package = "com.aidevops.grpc";
+option java_multiple_files = true;
+option java_outer_classname = "AIDevOpsProto";
+
+// Service definition
+service AIDevOpsService {
+    // Simple RPC
+    rpc SayHello (HelloRequest) returns (HelloResponse) {}
+    
+    // Server-side streaming
+    rpc StreamMetrics (MetricsRequest) returns (stream MetricsResponse) {}
+    
+    // Client-side streaming
+    rpc SendLogs (stream LogEntry) returns (LogSummary) {}
+    
+    // Bidirectional streaming
+    rpc Chat (stream ChatMessage) returns (stream ChatMessage) {}
+}
+
+// Hello endpoints
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloResponse {
+    string message = 1;
+    int64 timestamp = 2;
+    string pod_name = 3;
+    string version = 4;
+}
+
+// Metrics endpoints
+message MetricsRequest {
+    bool detailed = 1;
+    int32 interval_seconds = 2;
+}
+
+message MetricsResponse {
+    int64 requests_total = 1;
+    int32 active_connections = 2;
+    double memory_usage_mb = 3;
+    double cpu_usage_percent = 4;
+    string pod_name = 5;
+    int64 timestamp = 6;
+    map<string, double> custom_metrics = 7;
+}
+
+// Log streaming
+message LogEntry {
+    string level = 1;
+    string message = 2;
+    int64 timestamp = 3;
+    map<string, string> tags = 4;
+}
+
+message LogSummary {
+    int32 entries_received = 1;
+    int64 first_timestamp = 2;
+    int64 last_timestamp = 3;
+    repeated string error_levels = 4;
+}
+
+// Chat for bidirectional streaming
+message ChatMessage {
+    string user = 1;
+    string message = 2;
+    int64 timestamp = 3;
+    string room = 4;
+}
+
+// Health check
+message HealthCheckRequest {
+    string service = 1;
+}
+
+message HealthCheckResponse {
+    enum ServingStatus {
+        UNKNOWN = 0;
+        SERVING = 1;
+        NOT_SERVING = 2;
+    }
+    ServingStatus status = 1;
+}
